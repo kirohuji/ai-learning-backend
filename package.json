@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@ai-sdk/deepseek": "^0.2.8",
+    "@nestjs/axios": "^4.0.0",
     "@nestjs/bullmq": "^11.0.2",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.0.1",

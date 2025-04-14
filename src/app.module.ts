@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ConversationModule } from './modules/conversation/conversation.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { FileModule } from './modules/file/file.module';
+import { AiModule } from './modules/ai/ai.module';
 import configurations from './configurations';
 
 @Module({
@@ -24,6 +25,7 @@ import configurations from './configurations';
     AuthModule,
     ConversationModule,
     FileModule,
+    AiModule,
   ],
 })
 export class AppModule {}
