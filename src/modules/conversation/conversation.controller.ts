@@ -26,8 +26,6 @@ import {
   ApiBearerAuth,
   ApiResponse,
 } from '@nestjs/swagger';
-import { AnalyzeContractDto } from './dto/analyze-contract.dto';
-import { AnalyzeContractResponseDto } from './dto/analyze-contract-response.dto';
 import { ConversationExceptionFilter } from './exceptions/conversation-exception.filter';
 
 @ApiTags('会话管理')
@@ -121,21 +119,5 @@ export class ConversationController {
       });
     }
     return this.chatService.sendMessage(conversationId, message);
-  }
-
-  @ApiOperation({ summary: '测试合同AI分析' })
-  @ApiResponse({
-    status: 200,
-    description: '返回合同分析结果，包括标题、描述、金额和风险点分析',
-    type: AnalyzeContractResponseDto,
-  })
-  @Post('analyzeContract')
-  async analyzeContract(@Body() body: AnalyzeContractDto) {
-    return await this.chatService.analyzeContract(
-      body.content,
-      body.category,
-      body.reviewPerspective,
-      body.reviewRequirements,
-    );
   }
 }
