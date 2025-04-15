@@ -1,8 +1,8 @@
 # Use the official Node.js image as the base image
-FROM node:20
+FROM registry.npmmirror.com/library/node:20
 
-# Install pnpm globally
-RUN npm install -g pnpm
+# Install pnpm globally using Chinese mirror
+RUN npm install -g pnpm --registry=https://registry.npmmirror.com
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
@@ -10,8 +10,8 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install the application dependencies
-RUN pnpm install
+# Install the application dependencies using Chinese mirror
+RUN pnpm install --registry=https://registry.npmmirror.com
 
 # Copy the rest of the application files
 COPY . .
