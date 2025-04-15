@@ -66,4 +66,29 @@ export class FileService {
       where: { id: fileId },
     });
   }
+
+  async getFiles(userId: string, page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+    const [files, total] = await Promise.all([
+      this.prisma.file.findMany({
+        where: { createdBy: userId },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.file.count({
+        where: { createdBy: userId },
+      }),
+    ]);
+
+    return {
+      data: files,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 }

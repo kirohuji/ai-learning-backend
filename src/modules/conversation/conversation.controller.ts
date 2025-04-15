@@ -84,16 +84,21 @@ export class ConversationController {
   @Put(':id')
   async updateConversation(
     @Param('id') id: string,
+    @CurrentUser() user: User,
     @Body() updateDto: UpdateConversationDto,
   ) {
-    return await this.conversationService.updateConversation(id, updateDto);
+    return await this.conversationService.updateConversation(
+      id,
+      user.id,
+      updateDto,
+    );
   }
 
   @ApiOperation({ summary: '删除对话' })
   @ApiResponse({ status: 204, description: '对话删除成功' })
   @Delete(':id')
-  async deleteConversation(@Param('id') id: string) {
-    await this.conversationService.deleteConversation(id);
+  async deleteConversation(@Param('id') id: string, @CurrentUser() user: User) {
+    await this.conversationService.deleteConversation(id, user.id);
     return null;
   }
 

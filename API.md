@@ -76,7 +76,24 @@
   - 200: 更新成功
   - 404: 用户不存在
 
-### 1.6 发送短信验证码
+### 1.6 更新用户密码
+- **接口**: PUT `/users/me/password`
+- **描述**: 更新当前用户密码
+- **认证**: 需要Bearer Token
+- **请求体**:
+  ```typescript
+  {
+    currentPassword: string;
+    newPassword: string;
+  }
+  ```
+- **响应**: MessageResponseDto
+- **状态码**: 
+  - 200: 密码更新成功
+  - 401: 当前密码错误
+  - 404: 用户不存在
+
+### 1.7 发送短信验证码
 - **接口**: POST `/verification-codes`
 - **描述**: 创建新的验证码
 - **请求体**:
@@ -90,7 +107,7 @@
   - 201: 验证码发送成功
   - 429: 请求过于频繁
 
-### 1.7 验证短信验证码
+### 1.8 验证短信验证码
 - **接口**: POST `/verification-codes/verify`
 - **描述**: 验证短信验证码
 - **请求体**:
@@ -104,6 +121,44 @@
 - **状态码**: 
   - 200: 验证成功
   - 400: 验证码错误
+
+### 1.9 刷新访问令牌
+- **接口**: POST `/auth/tokens/refresh`
+- **描述**: 使用刷新令牌获取新的访问令牌
+- **请求体**:
+  ```typescript
+  {
+    refresh_token: string;
+  }
+  ```
+- **响应**: TokenResponseDto
+- **状态码**: 
+  - 200: 刷新成功
+  - 401: 刷新令牌无效
+
+### 1.10 退出登录
+- **接口**: POST `/auth/logout`
+- **描述**: 退出当前登录
+- **认证**: 需要Bearer Token
+- **响应**: MessageResponseDto
+- **状态码**: 
+  - 200: 退出成功
+
+### 1.11 重置密码
+- **接口**: POST `/auth/reset-password`
+- **描述**: 通过验证码重置密码
+- **请求体**:
+  ```typescript
+  {
+    phone: string;
+    code: string;
+    newPassword: string;
+  }
+  ```
+- **响应**: MessageResponseDto
+- **状态码**: 
+  - 200: 密码重置成功
+  - 400: 验证码错误或用户不存在
 
 ## 2. 会话管理模块 (Conversation)
 
@@ -230,6 +285,7 @@
 ### 4.1 文本转语音
 - **接口**: POST `/tts`
 - **描述**: 将文本转换为语音
+- **认证**: 需要Bearer Token
 - **请求体**:
   ```typescript
   {
@@ -277,5 +333,9 @@
 6. **文件上传**: 文件上传接口支持的最大文件大小为5MB，支持的文件类型为jpg、jpeg、png和pdf
 
 7. **流式响应**: 对话接口支持Server-Sent Events (SSE)的流式响应
+
+8. **密码规则**:
+   - 最小长度: 6位
+   - 建议包含: 字母、数字和特殊字符
 
 这个RESTful API设计遵循了REST架构风格的最佳实践，使用了更规范的HTTP方法和资源命名方式，使API更加直观和易于理解。每个资源都有清晰的CRUD操作对应，并且使用了合适的HTTP状态码来表示操作结果。

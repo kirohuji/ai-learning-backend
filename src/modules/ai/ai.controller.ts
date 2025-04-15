@@ -1,13 +1,6 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  ApiOperation,
-  ApiTags,
-  ApiResponse,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger';
 import { TtsService } from './tts.service';
 import { TtsRequestDto, TtsResponseDto } from './dto/tts.dto';
 
