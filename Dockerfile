@@ -11,7 +11,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install the application dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Copy the rest of the application files
 COPY . .
