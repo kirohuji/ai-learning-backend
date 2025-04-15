@@ -1,5 +1,5 @@
 # Use the official Node.js image as the base image
-FROM registry.npmmirror.com/library/node:20
+FROM node:20
 
 # Install pnpm globally using Chinese mirror
 RUN npm install -g pnpm --registry=https://registry.npmmirror.com
