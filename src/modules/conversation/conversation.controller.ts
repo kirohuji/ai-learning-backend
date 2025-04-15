@@ -39,6 +39,21 @@ export class ConversationController {
     private readonly chatService: ChatService,
   ) {}
 
+  @ApiOperation({ summary: '获取对话列表' })
+  @ApiResponse({ status: 200, description: '成功获取对话列表' })
+  @Get()
+  async getConversations(
+    @CurrentUser() user: User,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    return await this.conversationService.conversations(
+      user.id,
+      paginationDto.page,
+      paginationDto.limit,
+      paginationDto.title,
+    );
+  }
+
   @ApiOperation({ summary: '创建新的对话' })
   @ApiResponse({ status: 201, description: '对话创建成功' })
   @Post()
@@ -46,78 +61,55 @@ export class ConversationController {
     @CurrentUser() user: User,
     @Body() body: CreateConversationDto,
   ) {
-    const conversation = this.conversationService.createConversation(
+    return this.conversationService.createConversation(
       user.id,
       body.title,
       body.context,
     );
-    return conversation;
   }
 
-  @ApiOperation({ summary: '获取对话历史记录' })
-  @ApiResponse({ status: 200, description: '成功获取对话历史' })
-  @Post('get/:conversationId')
-  async getConversationHistory(
-    @Param('conversationId') conversationId: string,
-  ) {
-    const conversation =
-      await this.conversationService.getConversation(conversationId);
+  @ApiOperation({ summary: '获取对话详情' })
+  @ApiResponse({ status: 200, description: '成功获取对话详情' })
+  @Get(':id')
+  async getConversation(@Param('id') id: string) {
+    const conversation = await this.conversationService.getConversation(id);
     if (!conversation) {
       return { error: '会话未找到' };
     }
     return conversation;
   }
 
-  @ApiOperation({ summary: '获取对话列表（分页）' })
-  @ApiResponse({ status: 200, description: '成功获取对话列表' })
-  @Post('pagination')
-  async conversations(@CurrentUser() user: User, @Body() body: PaginationDto) {
-    return await this.conversationService.conversations(
-      user.id,
-      body.page,
-      body.limit,
-      body.title,
-    );
-  }
-
-  @ApiOperation({ summary: '更新对话信息' })
+  @ApiOperation({ summary: '更新对话' })
   @ApiResponse({ status: 200, description: '对话更新成功' })
-  @Post('update/:conversationId')
+  @Put(':id')
   async updateConversation(
-    @CurrentUser() user: User,
-    @Param('conversationId') conversationId: string,
-    @Body() body: UpdateConversationDto,
+    @Param('id') id: string,
+    @Body() updateDto: UpdateConversationDto,
   ) {
-    return this.conversationService.updateConversation(
-      conversationId,
-      user.id,
-      body,
-    );
+    return await this.conversationService.updateConversation(id, updateDto);
   }
 
   @ApiOperation({ summary: '删除对话' })
-  @ApiResponse({ status: 200, description: '对话删除成功' })
-  @Post('delete/:conversationId')
-  async deleteConversation(
-    @Param('conversationId') conversationId: string,
-    @CurrentUser() user: User,
-  ) {
-    return this.conversationService.deleteConversation(conversationId, user.id);
+  @ApiResponse({ status: 204, description: '对话删除成功' })
+  @Delete(':id')
+  async deleteConversation(@Param('id') id: string) {
+    await this.conversationService.deleteConversation(id);
+    return null;
   }
 
   @ApiOperation({ summary: '发送消息并获取流式响应' })
   @ApiResponse({ status: 200, description: '消息发送成功' })
-  @Sse(':conversationId/message')
-  async streamChat(
-    @Param('conversationId') conversationId: string,
-    @Query('message') message: string,
+  @Post(':id/messages')
+  async sendMessage(
+    @Param('id') conversationId: string,
+    @Body('content') content: string,
   ): Promise<Observable<any>> {
-    if (!message) {
+    if (!content) {
       return new Observable((subscriber) => {
         subscriber.next({ data: '请提供消息' });
         subscriber.complete();
       });
     }
-    return this.chatService.sendMessage(conversationId, message);
+    return this.chatService.sendMessage(conversationId, content);
   }
 }

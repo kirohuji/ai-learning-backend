@@ -47,15 +47,15 @@ import { Request, Response } from 'express';
 import { JWT_CONSTANTS, JWT_COOKIE_OPTIONS } from './constants/jwt.constants';
 
 @ApiTags('用户管理')
-@Controller('auth')
+@Controller()
 @UseFilters(AuthExceptionFilter)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({ summary: '用户登录' })
-  @ApiResponse({ status: 200, description: '登录成功', type: TokenResponseDto })
+  @ApiResponse({ status: 201, description: '登录成功', type: TokenResponseDto })
   @ApiResponse({ status: 401, description: '登录失败' })
-  @Post('login')
+  @Post('auth/tokens')
   async login(@Body() loginDto: LoginDto): Promise<TokenResponseDto> {
     try {
       const user = await this.authService.validateUser(
@@ -75,9 +75,9 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: '短信验证码登录' })
-  @ApiResponse({ status: 200, description: '登录成功', type: TokenResponseDto })
+  @ApiResponse({ status: 201, description: '登录成功', type: TokenResponseDto })
   @ApiResponse({ status: 401, description: '登录失败' })
-  @Post('login/sms')
+  @Post('auth/tokens/sms')
   async loginWithSMS(
     @Body() loginWithSMSDto: LoginWithSMSDto,
   ): Promise<TokenResponseDto> {
@@ -97,7 +97,7 @@ export class AuthController {
   @ApiOperation({ summary: '用户注册' })
   @ApiResponse({ status: 201, description: '注册成功', type: TokenResponseDto })
   @ApiResponse({ status: 400, description: '注册失败' })
-  @Post('register')
+  @Post('users')
   async register(@Body() registerDto: RegisterDto): Promise<TokenResponseDto> {
     try {
       return await this.authService.register(
@@ -126,7 +126,7 @@ export class AuthController {
   @ApiResponse({ status: 404, description: '用户不存在' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Post('get/profile')
+  @Get('users/me')
   async getProfile(@CurrentUser() user: User): Promise<ProfileResponseDto> {
     try {
       return await this.authService.getProfile(user.id);
@@ -138,14 +138,42 @@ export class AuthController {
     }
   }
 
-  @ApiOperation({ summary: '发送短信验证码' })
+  @ApiOperation({ summary: '更新用户信息' })
   @ApiResponse({
     status: 200,
+    description: '信息更新成功',
+    type: ProfileResponseDto,
+  })
+  @ApiResponse({ status: 404, description: '用户不存在' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Put('users/me')
+  async updateUserProfile(
+    @CurrentUser() user: User,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ): Promise<ProfileResponseDto> {
+    try {
+      const updatedUser = await this.authService.updateUserProfile(
+        user.id,
+        updateProfileDto,
+      );
+      return updatedUser as ProfileResponseDto;
+    } catch (error) {
+      if (error instanceof UserNotFoundException) {
+        throw error;
+      }
+      throw new UserNotFoundException();
+    }
+  }
+
+  @ApiOperation({ summary: '发送短信验证码' })
+  @ApiResponse({
+    status: 201,
     description: '验证码发送成功',
     type: VerificationResponseDto,
   })
   @ApiResponse({ status: 429, description: '请求过于频繁' })
-  @Post('sms/send')
+  @Post('verification-codes')
   async sendVerificationCode(
     @Body() sendSmsDto: SendSmsDto,
   ): Promise<VerificationResponseDto> {
@@ -172,7 +200,7 @@ export class AuthController {
     type: MessageResponseDto,
   })
   @ApiResponse({ status: 400, description: '验证码错误' })
-  @Post('verify-code')
+  @Post('verification-codes/verify')
   async verifyCode(
     @Body() verifyCodeDto: VerifyCodeDto,
   ): Promise<MessageResponseDto> {
@@ -193,85 +221,6 @@ export class AuthController {
         throw error;
       }
       throw new InvalidVerificationCodeException();
-    }
-  }
-
-  @ApiOperation({ summary: '根据手机号获取用户信息' })
-  @ApiResponse({
-    status: 200,
-    description: '获取成功',
-    type: ProfileResponseDto,
-  })
-  @ApiResponse({ status: 404, description: '用户不存在' })
-  @Get('user/:phone')
-  async getUser(@Param('phone') phone: string): Promise<ProfileResponseDto> {
-    try {
-      const user = await this.authService.findUserByPhone(phone);
-      if (!user) {
-        throw new UserNotFoundException();
-      }
-      return user as ProfileResponseDto;
-    } catch (error) {
-      if (error instanceof UserNotFoundException) {
-        throw error;
-      }
-      throw new UserNotFoundException();
-    }
-  }
-
-  @ApiOperation({ summary: '更新用户密码' })
-  @ApiResponse({
-    status: 200,
-    description: '密码更新成功',
-    type: MessageResponseDto,
-  })
-  @ApiResponse({ status: 404, description: '用户不存在' })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
-  @Post('update/password')
-  async updateUserPassword(
-    @CurrentUser() user: User,
-    @Body() updatePasswordDto: UpdatePasswordDto,
-  ): Promise<MessageResponseDto> {
-    try {
-      await this.authService.updateUserPassword(
-        user.id,
-        updatePasswordDto.newPassword,
-      );
-      return { message: '密码更新成功' };
-    } catch (error) {
-      if (error instanceof UserNotFoundException) {
-        throw error;
-      }
-      throw new UserNotFoundException();
-    }
-  }
-
-  @ApiOperation({ summary: '更新用户信息' })
-  @ApiResponse({
-    status: 200,
-    description: '信息更新成功',
-    type: ProfileResponseDto,
-  })
-  @ApiResponse({ status: 404, description: '用户不存在' })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
-  @Post('update/profile')
-  async updateUserProfile(
-    @CurrentUser() user: User,
-    @Body() updateProfileDto: UpdateProfileDto,
-  ): Promise<ProfileResponseDto> {
-    try {
-      const updatedUser = await this.authService.updateUserProfile(
-        user.id,
-        updateProfileDto,
-      );
-      return updatedUser as ProfileResponseDto;
-    } catch (error) {
-      if (error instanceof UserNotFoundException) {
-        throw error;
-      }
-      throw new UserNotFoundException();
     }
   }
 

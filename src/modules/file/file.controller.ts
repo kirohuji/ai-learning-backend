@@ -12,6 +12,7 @@ import {
   Param,
   Res,
   UseFilters,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiConsumes, ApiBody, ApiOperation } from '@nestjs/swagger';
@@ -22,14 +23,24 @@ import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import { FileExceptionFilter } from './exceptions/file-exception.filter';
 
-@ApiTags('文件上传')
+@ApiTags('文件管理')
 @Controller('files')
 @UseGuards(AuthGuard('jwt'))
 @UseFilters(FileExceptionFilter)
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
-  @Post('upload')
+  @Get()
+  @ApiOperation({ summary: '获取文件列表' })
+  async getFiles(
+    @CurrentUser() user: User,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return await this.fileService.getFiles(user.id, page, limit);
+  }
+
+  @Post()
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -43,6 +54,7 @@ export class FileController {
     },
   })
   @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: '上传文件' })
   async uploadFile(
     @UploadedFile(
       new ParseFilePipe({
@@ -58,7 +70,7 @@ export class FileController {
     return this.fileService.uploadFile(file, user.id);
   }
 
-  @Post('get/:id')
+  @Get(':id')
   @ApiOperation({ summary: '获取文件' })
   async getFile(@Param('id') id: string, @Res() res: Response) {
     const { buffer, mimeType } = await this.fileService.getFile(id);
@@ -66,10 +78,10 @@ export class FileController {
     res.send(buffer);
   }
 
-  @Post('delete/:id')
+  @Delete(':id')
   @ApiOperation({ summary: '删除文件' })
   async deleteFile(@Param('id') id: string) {
     await this.fileService.deleteFile(id);
-    return { message: '文件删除成功' };
+    return null;
   }
 }
