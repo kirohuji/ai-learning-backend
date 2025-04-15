@@ -253,8 +253,8 @@ export class AuthService {
     const code = Math.floor(1000 + Math.random() * 9000).toString();
 
     // Send the verification code via SMS
-    const isSend = await this.smsService.sendVerificationCode(phone, code);
-    // const isSend = true;
+    // const isSend = await this.smsService.sendVerificationCode(phone, code);
+    const isSend = true;
     if (!isSend) {
       throw new VerificationCodeSendFailedException();
     } else {

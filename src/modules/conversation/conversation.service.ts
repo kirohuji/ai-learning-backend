@@ -127,7 +127,7 @@ export class ConversationService {
     ]);
 
     return {
-      data: conversations,
+      list: conversations,
       meta: {
         total,
         page,

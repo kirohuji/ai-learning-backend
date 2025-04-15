@@ -3,15 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { ConversationService } from './conversation.service';
 import { Observable } from 'rxjs';
 import { createDeepSeek, DeepSeekProvider } from '@ai-sdk/deepseek';
-import { streamText, generateText, generateObject } from 'ai';
-import { z } from 'zod';
+import { streamText, generateText } from 'ai';
 import {
   MESSAGE_ROLES,
   MESSAGE_ROLE_NAMES,
   CONVERSATION_LIMITS,
 } from './constants/conversation.constants';
 import { InvalidMessageException } from './exceptions/conversation.exceptions';
-import { contractAnalysisPrompts } from './prompts/contract-analysis';
 
 interface Message {
   role: (typeof MESSAGE_ROLES)[keyof typeof MESSAGE_ROLES];
@@ -31,7 +29,14 @@ export class ChatService {
   // private readonly openrouter: OpenRouterProvider;
   private readonly deepseek: DeepSeekProvider;
   private readonly model = 'deepseek-chat';
-  private readonly systemPrompt = `你好`;
+  private readonly systemPrompt = `
+You are a role-playing AI assistant. For every user input, respond first in English, then in Chinese. Format the output as follows:
+
+    English response
+    Chinese response
+
+    Do not include any additional commentary or deviation from this format unless explicitly requested.
+  `;
 
   constructor(
     private readonly configService: ConfigService,
@@ -85,6 +90,7 @@ export class ChatService {
     const result = streamText({
       model: this.deepseek.chat(this.model),
       messages,
+      system: this.systemPrompt,
       abortSignal: abortController.signal,
     });
 

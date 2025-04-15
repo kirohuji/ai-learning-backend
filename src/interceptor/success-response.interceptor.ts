@@ -42,18 +42,11 @@ export class SuccessResponseInterceptor<T>
     }
 
     return next.handle().pipe(
-      map(
-        (
-          data: T & {
-            meta?: { page?: number; limit?: number; total?: number };
-          },
-        ) => ({
-          success: true,
-          code: `HTTP_${statusCode}`,
-          data,
-          meta: data?.meta,
-        }),
-      ),
+      map((data: T) => ({
+        success: true,
+        code: `HTTP_${statusCode}`,
+        data,
+      })),
     );
   }
 }

@@ -7,6 +7,7 @@ import {
   Put,
   Req,
   Res,
+  Param,
   UseFilters,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -46,7 +47,7 @@ import { Request, Response } from 'express';
 import { JWT_CONSTANTS, JWT_COOKIE_OPTIONS } from './constants/jwt.constants';
 
 @ApiTags('用户管理')
-@Controller()
+@Controller('auth')
 @UseFilters(AuthExceptionFilter)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -54,7 +55,7 @@ export class AuthController {
   @ApiOperation({ summary: '用户登录' })
   @ApiResponse({ status: 201, description: '登录成功', type: TokenResponseDto })
   @ApiResponse({ status: 401, description: '登录失败' })
-  @Post('auth/tokens')
+  @Post('login')
   async login(@Body() loginDto: LoginDto): Promise<TokenResponseDto> {
     try {
       const user = await this.authService.validateUser(
@@ -66,6 +67,7 @@ export class AuthController {
       }
       return this.authService.login(user);
     } catch (error) {
+      console.log(error);
       if (error instanceof InvalidCredentialsException) {
         throw error;
       }
@@ -76,7 +78,7 @@ export class AuthController {
   @ApiOperation({ summary: '短信验证码登录' })
   @ApiResponse({ status: 201, description: '登录成功', type: TokenResponseDto })
   @ApiResponse({ status: 401, description: '登录失败' })
-  @Post('auth/tokens/sms')
+  @Post('login/sms')
   async loginWithSMS(
     @Body() loginWithSMSDto: LoginWithSMSDto,
   ): Promise<TokenResponseDto> {
@@ -86,6 +88,7 @@ export class AuthController {
         loginWithSMSDto.code,
       );
     } catch (error) {
+      console.log(error);
       if (error instanceof UserNotFoundException) {
         throw new UserNotFoundException();
       }
@@ -96,7 +99,7 @@ export class AuthController {
   @ApiOperation({ summary: '用户注册' })
   @ApiResponse({ status: 201, description: '注册成功', type: TokenResponseDto })
   @ApiResponse({ status: 400, description: '注册失败' })
-  @Post('users')
+  @Post('register')
   async register(@Body() registerDto: RegisterDto): Promise<TokenResponseDto> {
     try {
       return await this.authService.register(
@@ -125,7 +128,7 @@ export class AuthController {
   @ApiResponse({ status: 404, description: '用户不存在' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Get('users/me')
+  @Get('profile')
   async getProfile(@CurrentUser() user: User): Promise<ProfileResponseDto> {
     try {
       return await this.authService.getProfile(user.id);
@@ -146,7 +149,7 @@ export class AuthController {
   @ApiResponse({ status: 404, description: '用户不存在' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Put('users/me')
+  @Put('profile')
   async updateUserProfile(
     @CurrentUser() user: User,
     @Body() updateProfileDto: UpdateProfileDto,
@@ -172,7 +175,7 @@ export class AuthController {
     type: VerificationResponseDto,
   })
   @ApiResponse({ status: 429, description: '请求过于频繁' })
-  @Post('verification-codes')
+  @Post('sms/send')
   async sendVerificationCode(
     @Body() sendSmsDto: SendSmsDto,
   ): Promise<VerificationResponseDto> {
@@ -188,6 +191,7 @@ export class AuthController {
       if (error instanceof TooManyVerificationAttemptsException) {
         throw error;
       }
+      console.log(error);
       throw new TooManyVerificationAttemptsException();
     }
   }
@@ -199,7 +203,7 @@ export class AuthController {
     type: MessageResponseDto,
   })
   @ApiResponse({ status: 400, description: '验证码错误' })
-  @Post('verification-codes/verify')
+  @Post('verify-code')
   async verifyCode(
     @Body() verifyCodeDto: VerifyCodeDto,
   ): Promise<MessageResponseDto> {
@@ -302,6 +306,29 @@ export class AuthController {
         updatePasswordDto.newPassword,
       );
       return { message: '密码更新成功' };
+    } catch (error) {
+      if (error instanceof UserNotFoundException) {
+        throw error;
+      }
+      throw new UserNotFoundException();
+    }
+  }
+
+  @ApiOperation({ summary: '根据手机号获取用户信息' })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
+    type: ProfileResponseDto,
+  })
+  @ApiResponse({ status: 404, description: '用户不存在' })
+  @Get('user/:phone')
+  async getUser(@Param('phone') phone: string): Promise<ProfileResponseDto> {
+    try {
+      const user = await this.authService.findUserByPhone(phone);
+      if (!user) {
+        throw new UserNotFoundException();
+      }
+      return user as ProfileResponseDto;
     } catch (error) {
       if (error instanceof UserNotFoundException) {
         throw error;

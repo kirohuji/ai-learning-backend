@@ -11,7 +11,7 @@
 ## 1. 用户认证模块 (Auth)
 
 ### 1.1 用户登录
-- **接口**: POST `/auth/tokens`
+- **接口**: POST `/auth/login`
 - **描述**: 创建新的访问令牌
 - **请求体**:
   ```typescript
@@ -26,7 +26,7 @@
   - 401: 登录失败
 
 ### 1.2 短信验证码登录
-- **接口**: POST `/auth/tokens/sms`
+- **接口**: POST `/auth/login/sms`
 - **描述**: 使用短信验证码创建访问令牌
 - **请求体**:
   ```typescript
@@ -41,7 +41,7 @@
   - 401: 登录失败
 
 ### 1.3 用户注册
-- **接口**: POST `/users`
+- **接口**: POST `/auth/register`
 - **描述**: 创建新用户
 - **请求体**:
   ```typescript
@@ -58,7 +58,7 @@
   - 400: 注册失败
 
 ### 1.4 获取用户信息
-- **接口**: GET `/users/me`
+- **接口**: GET `/auth/profile`
 - **描述**: 获取当前登录用户的信息
 - **认证**: 需要Bearer Token
 - **响应**: ProfileResponseDto
@@ -67,7 +67,7 @@
   - 404: 用户不存在
 
 ### 1.5 更新用户信息
-- **接口**: PUT `/users/me`
+- **接口**: PUT `/auth/profile`
 - **描述**: 更新当前用户信息
 - **认证**: 需要Bearer Token
 - **请求体**: UpdateProfileDto
@@ -77,7 +77,7 @@
   - 404: 用户不存在
 
 ### 1.6 更新用户密码
-- **接口**: PUT `/users/me/password`
+- **接口**: PUT `/auth/password`
 - **描述**: 更新当前用户密码
 - **认证**: 需要Bearer Token
 - **请求体**:
@@ -94,7 +94,7 @@
   - 404: 用户不存在
 
 ### 1.7 发送短信验证码
-- **接口**: POST `/verification-codes`
+- **接口**: POST `/auth/sms/send`
 - **描述**: 创建新的验证码
 - **请求体**:
   ```typescript
@@ -108,7 +108,7 @@
   - 429: 请求过于频繁
 
 ### 1.8 验证短信验证码
-- **接口**: POST `/verification-codes/verify`
+- **接口**: POST `/auth/sms/verify`
 - **描述**: 验证短信验证码
 - **请求体**:
   ```typescript
@@ -123,7 +123,7 @@
   - 400: 验证码错误
 
 ### 1.9 刷新访问令牌
-- **接口**: POST `/auth/tokens/refresh`
+- **接口**: POST `/auth/token/refresh`
 - **描述**: 使用刷新令牌获取新的访问令牌
 - **请求体**:
   ```typescript
@@ -145,7 +145,7 @@
   - 200: 退出成功
 
 ### 1.11 重置密码
-- **接口**: POST `/auth/reset-password`
+- **接口**: POST `/auth/forgot-password`
 - **描述**: 通过验证码重置密码
 - **请求体**:
   ```typescript
