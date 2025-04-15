@@ -1,29 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { firstValueFrom } from 'rxjs';
 import { TtsRequestDto, TtsResponseDto } from './dto/tts.dto';
-import {
-  MINIMAX_API_URL,
-  MINIMAX_TTS_ENDPOINT,
-  MINIMAX_TTS_VOICES,
-  MINIMAX_TTS_LANGUAGES,
-} from './constants/minimax.constants';
 import {
   TtsServiceException,
   TtsApiException,
   TtsInvalidRequestException,
 } from './exceptions/tts.exception';
 
-interface MinimaxTtsResponse {
-  audioUrl: string;
-  duration?: number;
-}
+// interface MinimaxTtsResponse {
+//   audioUrl: string;
+//   duration?: number;
+// }
 
 @Injectable()
 export class TtsService {
   private readonly apiKey: string;
-  private readonly apiUrl: string;
 
   constructor(
     private readonly httpService: HttpService,
@@ -34,7 +26,6 @@ export class TtsService {
       throw new Error('MINIMAX_API_KEY is not configured');
     }
     this.apiKey = apiKey;
-    this.apiUrl = MINIMAX_API_URL;
   }
 
   textToSpeech(request: TtsRequestDto): Promise<TtsResponseDto> {
@@ -46,7 +37,7 @@ export class TtsService {
       }
 
       return Promise.resolve({
-        audioUrl: 'response.audioUrl',
+        audioUrl: this.apiKey,
         duration: 0,
       });
     } catch (error: unknown) {
