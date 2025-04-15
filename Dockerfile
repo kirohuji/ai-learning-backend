@@ -13,6 +13,9 @@ COPY package*.json ./
 # Install the application dependencies using Chinese mirror
 RUN pnpm install --registry=https://registry.npmmirror.com
 
+# Copy environment file
+COPY .env.production .env
+
 # Copy the rest of the application files
 COPY . .
 
