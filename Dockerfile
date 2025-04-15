@@ -19,6 +19,10 @@ COPY . .
 # Build the NestJS application
 RUN pnpm run build
 
+# Initialize Prisma
+RUN pnpm prisma generate
+RUN pnpm prisma db push
+
 # Expose the application port
 EXPOSE 3000
 
