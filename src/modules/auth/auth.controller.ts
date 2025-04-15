@@ -3,7 +3,6 @@ import {
   Post,
   Body,
   Get,
-  Param,
   UseGuards,
   Put,
   Req,
@@ -280,6 +279,34 @@ export class AuthController {
         throw error;
       }
       throw new InvalidVerificationCodeException();
+    }
+  }
+
+  @ApiOperation({ summary: '更新用户密码' })
+  @ApiResponse({
+    status: 200,
+    description: '密码更新成功',
+    type: MessageResponseDto,
+  })
+  @ApiResponse({ status: 404, description: '用户不存在' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Put('password')
+  async updateUserPassword(
+    @CurrentUser() user: User,
+    @Body() updatePasswordDto: UpdatePasswordDto,
+  ): Promise<MessageResponseDto> {
+    try {
+      await this.authService.updateUserPassword(
+        user.id,
+        updatePasswordDto.newPassword,
+      );
+      return { message: '密码更新成功' };
+    } catch (error) {
+      if (error instanceof UserNotFoundException) {
+        throw error;
+      }
+      throw new UserNotFoundException();
     }
   }
 }
